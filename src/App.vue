@@ -3,14 +3,14 @@ import { ref } from 'vue';
 import { useScheduleAllocator, type ScheduleParams } from './composables/useScheduleAllocator';
 
 const params = ref<ScheduleParams>({
-  startDate: '2026-11-15',
-  endDate: '2026-12-15',
-  totalHours: 17,
-  totalMinutes: 44,
-  holidays: ['2026-11-23'],
+  startDate: '2026-11-1',
+  endDate: '2026-12-31',
+  totalHours: 24,
+  totalMinutes: 40,
+  holidays: [], // いらない
   fixedWeekday: 4,
-  fixedBaseMinutes: 80,
-  fixedBestMinutes: 90,
+  fixedBaseMinutes: 60,
+  fixedBestMinutes: 120,
   holidayRatio: 0.3,
   bufferRatio: 0.15,
   dynamicMaxRatio: 0.08,
@@ -22,7 +22,7 @@ const { result } = useScheduleAllocator(params);
 const categoryLabels: Record<string, string> = {
   fixed: '確定枠',
   weekday: '均等4曜日',
-  holiday: '土休日',
+  holiday: '土日',
   buffer: '予備日',
 };
 </script>
