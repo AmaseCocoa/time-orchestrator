@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useScheduleAllocator, type ScheduleParams } from './composables/useScheduleAllocator';
+import { parseScheduleQueryParams } from './utils/scheduleQueryParams';
 
-const params = ref<ScheduleParams>({
+const defaultParams: ScheduleParams = {
   startDate: '2026-11-1',
   endDate: '2026-12-31',
   totalHours: 24,
@@ -15,7 +16,9 @@ const params = ref<ScheduleParams>({
   bufferRatio: 0.15,
   dynamicMaxRatio: 0.08,
   roundUnitMinutes: 5,
-});
+};
+const { params: queryParams, invalidParams } = parseScheduleQueryParams(window.location.search);
+const params = ref<ScheduleParams>({ ...defaultParams, ...queryParams });
 
 const { result } = useScheduleAllocator(params);
 
@@ -47,11 +50,13 @@ const categoryLabels: Record<string, string> = {
       <div class="control-group">
         <label>確定曜日:
           <select v-model.number="params.fixedWeekday">
+            <option :value="0">日曜</option>
             <option :value="1">月曜</option>
             <option :value="2">火曜</option>
             <option :value="3">水曜</option>
             <option :value="4">木曜</option>
             <option :value="5">金曜</option>
+            <option :value="6">土曜</option>
           </select>
         </label>
         <label>基本(分): <input type="number" v-model.number="params.fixedBaseMinutes" step="5" style="width: 65px" /></label>
@@ -64,6 +69,10 @@ const categoryLabels: Record<string, string> = {
         <label>丸め単位(分): <input type="number" v-model.number="params.roundUnitMinutes" step="5" min="1" style="width: 60px" /></label>
       </div>
     </div>
+
+    <p v-if="invalidParams.length" class="query-warning" role="alert">
+      無効なクエリパラメータは既定値を使用します: {{ invalidParams.join(', ') }}
+    </p>
 
     <div v-if="result" class="summary-box">
       <p><strong>均等4曜日の割り当て:</strong> 毎日 {{ result.assignedWeekday }}分（上限目安: {{ result.dynamicMaxWeekday }}分）</p>
@@ -109,6 +118,7 @@ const categoryLabels: Record<string, string> = {
 .planner-container { max-width: 720px; margin: 0 auto; font-family: sans-serif; }
 .controls { background: #f5f7fa; padding: 16px; border-radius: 8px; margin-bottom: 16px; display: grid; gap: 10px; }
 .control-group { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+.query-warning { color: #b91c1c; }
 .summary-box { background: #eef6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; margin-bottom: 16px; }
 .schedule-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .schedule-table th, .schedule-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
